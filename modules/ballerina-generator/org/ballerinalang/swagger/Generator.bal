@@ -3,6 +3,8 @@ package org.ballerinalang.swagger;
 import ballerina.file;
 import ballerina.io;
 
+import org.ballerinalang.template.parser;
+
 public function main (string[] args) {
     if (lengthof args < 1) {
         println("Error: not enough arguments");
@@ -10,7 +12,10 @@ public function main (string[] args) {
     }
 
     json spec = readSpecFile(args[0]);
+    string template = readFileStream("org/ballerinalang/swagger/resources/operation.hbs");
     map context = buildContextForJson(spec);
+    parser:buildTemplateForJson(context, template);
+    string outPath = args[0].replace("swagger.json", "");
 }
 
 function readSpecFile (string path) (json) {
