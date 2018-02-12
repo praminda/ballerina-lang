@@ -293,7 +293,7 @@ function extractCallbacks (map context, json callbacks) (map) {
     return context;
 }
 
-// Exctract a Reference Object from the provided path
+// Extract a Reference Object from the provided path
 function getReferenceObject (string refPath) (json) {
     json refObject = null;
 
