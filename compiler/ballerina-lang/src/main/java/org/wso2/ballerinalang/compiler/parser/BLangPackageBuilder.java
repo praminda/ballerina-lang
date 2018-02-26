@@ -136,7 +136,7 @@ import org.wso2.ballerinalang.compiler.tree.types.BLangValueType;
 import org.wso2.ballerinalang.compiler.util.CompilerContext;
 import org.wso2.ballerinalang.compiler.util.QuoteType;
 import org.wso2.ballerinalang.compiler.util.TypeTags;
-import org.wso2.ballerinalang.compiler.util.diagnotic.DiagnosticLog;
+import org.wso2.ballerinalang.compiler.util.diagnotic.BLangDiagnosticLog;
 import org.wso2.ballerinalang.compiler.util.diagnotic.DiagnosticPos;
 
 import java.util.ArrayList;
@@ -220,14 +220,14 @@ public class BLangPackageBuilder {
 
     private Set<Whitespace> endpointKeywordWs;
 
-    private DiagnosticLog dlog;
     private BLangAnonymousModelHelper anonymousModelHelper;
+    private BLangDiagnosticLog dlog;
 
     private static final String PIPE = "|";
 
     public BLangPackageBuilder(CompilerContext context, CompilationUnitNode compUnit) {
-        this.dlog = DiagnosticLog.getInstance(context);
         this.anonymousModelHelper = BLangAnonymousModelHelper.getInstance(context);
+        this.dlog = BLangDiagnosticLog.getInstance(context);
         this.compUnit = compUnit;
     }
 
