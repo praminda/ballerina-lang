@@ -39,6 +39,7 @@
     <modules>
         <module>modules/swagger-ballerina-generator</module>
         <module>modules/ballerina-to-swagger-generator</module>
+        <module>modules/oas-ballerina-generator</module>
     </modules>
 
 </project>
