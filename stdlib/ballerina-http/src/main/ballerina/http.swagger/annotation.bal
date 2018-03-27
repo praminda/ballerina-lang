@@ -13,11 +13,9 @@ import ballerina/http;
 public struct ServiceInformation {
     string title;
     string serviceVersion;
-    string description;
     string termsOfService;
     Contact contact;
     License license;
-    DocumentationInformation externalDocs;
     Tag[] tags;
     SecurityRequirement[] security;
 }
@@ -100,9 +98,6 @@ public struct Schema {
 @Field {value: "parameters: A list of parameters that are applicable for this operation"}
 public struct ResourceInformation {
     string[] tags;
-    string summary;
-    string description;
-    DocumentationInformation externalDocs;
     ParameterInformation[] parameters;
 }
 

@@ -10,7 +10,6 @@ import ballerina/http.swagger;
 {{/servers}}
 @swagger:ServiceInfo { {{#info}}
     title: "{{title}}",
-    description: "{{description}}",
     serviceVersion: "{{version}}",
     termsOfService: "{{termsOfService}}",
     contact: {name: "{{contact.name}}", email: "{{contact.email}}", url: "{{contact.url}}"},
@@ -18,7 +17,6 @@ import ballerina/http.swagger;
     tags: [{{#tags}}
         {name: "{{name}}", description: "{{description}}", externalDocs: {{>doc}} }{{#unless @last}},{{/unless}}{{/tags}}
     ],
-    externalDocs: {{>doc}},
     security: [{{#security}}
         {{>security}}{{/security}}
     ]
@@ -26,13 +24,16 @@ import ballerina/http.swagger;
 @http:ServiceConfig {
     basePath: "{{servers.0.basePath}}"{{!-- {{only one base path is allowed for all endpoints}} --}}
 }
+documentation { {{#info.description}}
+{{info.description}}{{/info.description}}{{#externalDocs}}
+
+url: {{externalDocs.url}}
+description: {{externalDocs.description}}{{/externalDocs}}
+}
 service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unless @last}}, {{/unless}}{{/servers}} {
 {{#paths}}{{#value}}{{#get}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -47,6 +48,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["GET"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
@@ -59,9 +68,6 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
 {{/get}}{{#post}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -76,6 +82,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["POST"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
@@ -88,9 +102,6 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
 {{/post}}{{#put}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -105,6 +116,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["PUT"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
@@ -117,9 +136,6 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
 {{/put}}{{#delete}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -134,6 +150,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["DELETE"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
@@ -146,9 +170,6 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
 {{/delete}}{{#options}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -163,6 +184,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["OPTIONS"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
@@ -175,9 +204,6 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
 {{/options}}{{#head}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -192,6 +218,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["HEAD"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
@@ -204,9 +238,6 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
 {{/head}}{{#patch}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -221,6 +252,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["PATCH"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
@@ -233,9 +272,6 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
 {{/patch}}{{#trace}}
     @swagger:ResourceInfo {
         tags: [{{#tags}}"{{.}}"{{#unless @last}},{{/unless}}{{/tags}}],
-        summary: "{{summary}}",
-        description: "{{description}}",
-        externalDocs: {{>doc}},
         parameters: [{{#parameters}}
             {
                 name: "{{name}}",
@@ -250,6 +286,14 @@ service<http:Service> {{cut info.title " "}} bind {{#servers}}ep{{@index}}{{#unl
     @http:ResourceConfig {
         methods:["TRACE"],
         path:"{{key}}"
+    }
+    documentation { {{#summary}}
+    summary: {{summary}}{{/summary}}{{#description}}
+    description: {{description}}{{/description}}{{#externalDocs}}
+
+    url: {{externalDocs.url}}
+    description: {{externalDocs.description}}
+    {{/externalDocs}}
     }{{#deprecated}}
     deprecated {}{{/deprecated}}
     {{operationId}} (endpoint outboundEp, http:Request req{{#parameters}}{{>pathParams}}{{/parameters}}) {
