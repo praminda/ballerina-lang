@@ -115,7 +115,7 @@ public class SwaggerCmd implements BLauncherCmd {
 
     private void generateFromSwagger(String targetLanguage) {
         CodeGenerator generator = new CodeGenerator();
-        generator.setApiPackage(apiPackage);
+        generator.setSrcPackage(apiPackage);
 
         try {
             generator.generate(GenType.valueOf(targetLanguage), argList.get(1), output);
