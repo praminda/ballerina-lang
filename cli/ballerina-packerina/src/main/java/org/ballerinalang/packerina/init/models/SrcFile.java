@@ -63,20 +63,32 @@ public class SrcFile {
                                                         "}\n";
     private SrcFileType srcFileType;
     private String content;
-    private String name;
-    public SrcFile(String name, SrcFileType fileType) {
+    private String pkgName;
+    private String fileName;
+
+    public SrcFile(String pkgName, SrcFileType fileType) {
         this.srcFileType = fileType;
-        this.name = name;
-        content = this.name.isEmpty() ? "" : String.format(PACKAGE_TEMPLATE, this.name);
+        this.pkgName = pkgName;
+        content = this.pkgName.isEmpty() ? "" : String.format(PACKAGE_TEMPLATE, this.pkgName);
         switch (fileType) {
             case SERVICE:
+                fileName = "hello_service.bal";
                 content += SERVICE_CONTENT;
                 break;
             case MAIN:
             default:
+                fileName = "main.bal";
                 content += MAIN_FUNCTION_CONTENT;
                 break;
         }
+    }
+
+    public SrcFile(String pkgName, String content, String fileName) {
+        srcFileType = SrcFileType.SERVICE;
+        this.fileName = fileName;
+        this.pkgName = pkgName;
+        this.content = this.pkgName.isEmpty() ? "" : String.format(PACKAGE_TEMPLATE, this.pkgName);
+        this.content += content;
     }
     
     public SrcFileType getSrcFileType() {
@@ -87,26 +99,20 @@ public class SrcFile {
         return content;
     }
     
-    public String getName() {
-        return name;
+    public String getPkgName() {
+        return pkgName;
     }
-    
+
+    public String getFileName() {
+        return fileName;
+    }
+
     /**
      * Enum for the source file type.
      */
     public enum SrcFileType {
-        SERVICE("hello_service.bal"),
-        MAIN("main.bal");
-
-        private final String fileName;
-
-        SrcFileType(String fileName) {
-            this.fileName = fileName;
-        }
-
-        public String getFileName() {
-            return fileName;
-        }
+        SERVICE,
+        MAIN
     }
 }
 

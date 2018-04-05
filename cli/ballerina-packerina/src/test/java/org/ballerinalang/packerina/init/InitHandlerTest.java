@@ -72,8 +72,8 @@ public class InitHandlerTest {
         Assert.assertTrue(tomlFileContents.contains("version = \"" + manifest.getVersion() + "\""),
                 "Version missing in Ballerina.toml");
         
-        Path servicesBalFile = tmpDir.resolve(packageFile.getName()).resolve("services.bal");
-        Path mainBalFile = tmpDir.resolve(mainFile.getName());
+        Path servicesBalFile = tmpDir.resolve(packageFile.getPkgName()).resolve("services.bal");
+        Path mainBalFile = tmpDir.resolve(mainFile.getPkgName());
     
         Assert.assertTrue(Files.exists(servicesBalFile), "Package not generated.");
         Assert.assertTrue(Files.exists(mainBalFile), "Main file not generated.");

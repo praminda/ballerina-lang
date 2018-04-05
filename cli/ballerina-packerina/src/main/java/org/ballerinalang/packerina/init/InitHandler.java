@@ -91,12 +91,12 @@ public class InitHandler {
     private static void createSrcFolder(Path projectPath, List<SrcFile> srcFiles) throws IOException {
         if (null != srcFiles && srcFiles.size() > 0) {
             for (SrcFile srcFile : srcFiles) {
-                Path packagePath = projectPath.resolve(srcFile.getName());
+                Path packagePath = projectPath.resolve(srcFile.getPkgName());
                 if (!Files.exists(packagePath)) {
                     Files.createDirectory(packagePath);
                 }
 
-                Path srcFilePath = packagePath.resolve(srcFile.getSrcFileType().getFileName());
+                Path srcFilePath = packagePath.resolve(srcFile.getFileName());
                 if (!Files.exists(srcFilePath)) {
                     Files.createFile(srcFilePath);
                     writeContent(srcFilePath, srcFile.getContent());

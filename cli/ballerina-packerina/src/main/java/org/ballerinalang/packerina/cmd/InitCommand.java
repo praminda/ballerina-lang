@@ -21,9 +21,14 @@ package org.ballerinalang.packerina.cmd;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.ballerinalang.launcher.BLauncherCmd;
+import org.ballerinalang.launcher.LauncherUtils;
 import org.ballerinalang.packerina.init.InitHandler;
 import org.ballerinalang.packerina.init.models.SrcFile;
+import org.ballerinalang.swagger.CodeGenerator;
+import org.ballerinalang.swagger.exception.BallerinaOpenApiException;
+import org.ballerinalang.swagger.model.GenSrcFile;
 import org.ballerinalang.toml.model.Manifest;
 
 import java.io.IOException;
@@ -40,26 +45,43 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.ballerinalang.swagger.utils.GeneratorConstants.GenType;
+
 /**
  * Init command for creating a ballerina project.
  */
 @Parameters(commandNames = "init", commandDescription = "initialize ballerina project")
 public class InitCommand implements BLauncherCmd {
 
+    private static final String CONNECTOR = "connector";
+    private static final String MOCK = "mock";
     private static final String USER_DIR = "user.dir";
     public static final String DEFAULT_VERSION = "0.0.1";
     private static final PrintStream outStream = System.err;
+
     private JCommander parentCmdParser;
-    
+    private List<SrcFile> sourceFiles = new ArrayList<>();
+
+    @Parameter(arity = 1, description = "<action> <swagger specification>. action : mock|connector")
+    private List<String> argList;
+
     @Parameter(names = {"--interactive", "-i"})
     private boolean interactiveFlag;
+
+    @Parameter(names = { "--package", "-p" },
+               description = "Package name for generated source files (valid only for swagger)")
+    private String srcPackage;
     
     @Parameter(names = {"--help", "-h"}, hidden = true)
     private boolean helpFlag;
+
+    @Parameter(names = "--java.debug", hidden = true)
+    private String javaDebugPort;
     
     @Override
     public void execute() {
         PrintStream out = System.out;
+        boolean isDefaultInit = argList == null;
     
         // Get source root path.
         Path projectPath = Paths.get(System.getProperty(USER_DIR));
@@ -73,7 +95,6 @@ public class InitCommand implements BLauncherCmd {
                 return;
             }
 
-            List<SrcFile> sourceFiles = new ArrayList<>();
             if (interactiveFlag) {
 
                 // Check if Ballerina.toml file needs to be created.
@@ -139,8 +160,12 @@ public class InitCommand implements BLauncherCmd {
                 manifest.setVersion(DEFAULT_VERSION);
 
                 if (isDirEmpty(projectPath)) {
-                    SrcFile srcFile = new SrcFile("", SrcFile.SrcFileType.SERVICE);
-                    sourceFiles.add(srcFile);
+                    if (isDefaultInit) {
+                        SrcFile srcFile = new SrcFile("", SrcFile.SrcFileType.SERVICE);
+                        sourceFiles.add(srcFile);
+                    } else {
+                        generateSource(argList.get(0), argList.get(1));
+                    }
                 }
             }
 
@@ -149,8 +174,20 @@ public class InitCommand implements BLauncherCmd {
 
         } catch (IOException e) {
             out.println("Error occurred while creating project: " + e.getMessage());
+        } catch (BallerinaOpenApiException e) {
+            String causeMessage = "";
+            Throwable rootCause = ExceptionUtils.getRootCause(e);
+
+            if (rootCause != null) {
+                causeMessage = rootCause.getMessage();
+            }
+            throw LauncherUtils.createUsageException(
+                    "Error occurred when generating project for " + "swagger file at " + argList.get(1) + ". "
+                            + e.getMessage() + ". " + causeMessage);
+
         }
     }
+
 
     /**
      * {@inheritDoc}
@@ -175,7 +212,9 @@ public class InitCommand implements BLauncherCmd {
      */
     @Override
     public void printUsage(StringBuilder out) {
-        out.append("  ballerina init [-i] \n");
+        out.append("  ballerina init [-i] [<" + MOCK + " | " + CONNECTOR + "> <swaggerFile> -p<packageName>] \n");
+        out.append("\t" + MOCK + "      : generates a ballerina mock service for the swagger definition\n");
+        out.append("\t" + CONNECTOR + " : generates a ballerina connector for the swagger definition\n");
     }
     
     /**
@@ -211,6 +250,30 @@ public class InitCommand implements BLauncherCmd {
             out.println("--Invalid version: \"" + versionAsString + "\"");
         }
         return count == 1;
+    }
+
+    private void generateSource(String type, String swaggerPath) throws IOException, BallerinaOpenApiException {
+        String action = type.toLowerCase(Locale.ENGLISH);
+        CodeGenerator generator = new CodeGenerator().srcPackage(srcPackage);
+        List<GenSrcFile> sources;
+
+        switch (action) {
+        case MOCK:
+            sources = generator.generate(GenType.valueOf(MOCK.toUpperCase(Locale.ENGLISH)), swaggerPath);
+            break;
+        case CONNECTOR:
+            sources = generator.generate(GenType.valueOf(CONNECTOR.toUpperCase(Locale.ENGLISH)), swaggerPath);
+            break;
+        default:
+            throw LauncherUtils
+                    .createUsageException("Only following actions(mock, connector) are supported in init command");
+        }
+
+        sources.forEach(genFile -> {
+            SrcFile srcFile = new SrcFile(genFile.getPkgName(), genFile.getContent(),
+                    genFile.getFileName());
+            sourceFiles.add(srcFile);
+        });
     }
 
     private static boolean isDirEmpty(final Path directory) throws IOException {
