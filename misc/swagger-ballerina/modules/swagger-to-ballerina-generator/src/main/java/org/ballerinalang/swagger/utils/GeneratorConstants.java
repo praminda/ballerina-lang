@@ -33,7 +33,7 @@ public class GeneratorConstants {
     public enum GenType {
         MOCK("mock"), CONNECTOR("connector");
 
-        private String name;
+        private final String name;
 
         GenType(String name) {
             this.name = name;

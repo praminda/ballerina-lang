@@ -125,7 +125,7 @@ public class BallerinaOpenApi implements BallerinaSwaggerObject<BallerinaOpenApi
             try {
                 // Note that only one base path is allowed. Though we extract base path per each server
                 // defined in the Open Api definition, only the base path of first server will be used
-                // in ballerina code generation. Ballerina all endpoints to be in a single base path
+                // in ballerina code generation. Ballerina expects all endpoints to be in a single base path
                 BallerinaServer balServer = new BallerinaServer().buildContext(server);
                 servers.add(balServer);
             } catch (BallerinaOpenApiException e) {
@@ -153,16 +153,12 @@ public class BallerinaOpenApi implements BallerinaSwaggerObject<BallerinaOpenApi
     }
 
     public BallerinaOpenApi srcPackage(String srcPackage) {
-        if (srcPackage != null) {
-            this.srcPackage = srcPackage.replaceFirst("\\.", "/");
-        }
+        this.srcPackage = srcPackage;
         return this;
     }
 
     public BallerinaOpenApi modelPackage(String modelPackage) {
-        if (modelPackage != null) {
-            this.modelPackage = modelPackage.replaceFirst("\\.", "/");
-        }
+        this.modelPackage = modelPackage;
         return this;
     }
 

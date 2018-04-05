@@ -29,22 +29,28 @@ import io.swagger.oas.models.OpenAPI;
 import io.swagger.parser.v3.OpenAPIV3Parser;
 import org.ballerinalang.swagger.exception.BallerinaOpenApiException;
 import org.ballerinalang.swagger.model.BallerinaOpenApi;
+import org.ballerinalang.swagger.model.GenSrcFile;
 import org.ballerinalang.swagger.utils.GeneratorConstants;
 import org.ballerinalang.swagger.utils.GeneratorConstants.GenType;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class generates Ballerina Services/Connectors for a provided OAS definition.
  */
 public class CodeGenerator {
+    private static final String DEFAULT_SRC_PACKAGE = "swagger.gen";
+    private static final String DEFAULT_MODEL_PACKAGE = DEFAULT_SRC_PACKAGE;
     private String srcPackage;
     private String modelPackage;
 
     /**
-     * Generates ballerina source for provided Open API Definition in <code>definitionPath</code>
+     * Generates ballerina source for provided Open API Definition in <code>definitionPath</code>.
+     * Generated code will be written into <code>outPath</code>
      * <p>Method can be user for generating Ballerina mock services and connectors</p>
      *
      * @param type           Output type. Following types are supported
@@ -56,15 +62,16 @@ public class CodeGenerator {
      * @param outPath        Destination file path to save generated source files. If not provided
      *                       <code>definitionPath</code> will be used as the default destination path
      * @throws IOException when file operations fail
+     * @throws BallerinaOpenApiException when open api context building fails
      */
     public void generate(GenType type, String definitionPath, String outPath) throws IOException,
             BallerinaOpenApiException {
         OpenAPI api = new OpenAPIV3Parser().read(definitionPath);
         BallerinaOpenApi definitionContext = new BallerinaOpenApi().buildContext(api).srcPackage(srcPackage)
                 .modelPackage(modelPackage);
-        String fileName = api.getInfo().getTitle().replaceAll(" ", "") + ".bal";
+        String srcFile = api.getInfo().getTitle().replaceAll(" ", "") + ".bal";
         outPath = outPath == null || outPath.isEmpty() ? "." : outPath;
-        String destination =  outPath + File.separator + fileName;
+        String destination =  outPath + File.separator + srcFile;
         String schemaDestination = outPath + File.separator + GeneratorConstants.SCHEMA_FILE_NAME;
 
         switch (type) {
@@ -90,7 +97,57 @@ public class CodeGenerator {
     }
 
     /**
-     * Write ballerina definition of a <code>object</code> to a file as described by <code>template.</code>
+     * Generates ballerina source for provided Open API Definition in {@code definitionPath}.
+     * Generated code will be returned as a list of source files
+     * <p>Method can be user for generating Ballerina mock services and connectors</p>
+     *
+     * @param type           Output type. Following types are supported
+     *                       <ul>
+     *                       <li>mock</li>
+     *                       <li>connector</li>
+     *                       </ul>
+     * @param definitionPath Input Open Api Definition file path
+     * @return a list of generated source files wrapped as {@link GenSrcFile}
+     * @throws IOException when file operations fail
+     * @throws BallerinaOpenApiException when open api context building fail
+     */
+    public List<GenSrcFile> generate(GenType type, String definitionPath)
+            throws IOException, BallerinaOpenApiException {
+        OpenAPI api = new OpenAPIV3Parser().read(definitionPath);
+        BallerinaOpenApi definitionContext = new BallerinaOpenApi().buildContext(api).srcPackage(srcPackage)
+                .modelPackage(modelPackage);
+        String srcFile = api.getInfo().getTitle().replaceAll(" ", "") + ".bal";
+        List<GenSrcFile> sourceFiles = new ArrayList<>();
+
+        switch (type) {
+            case CONNECTOR:
+                sourceFiles.add(getSourceFile(srcPackage, srcFile, definitionContext,
+                        GeneratorConstants.DEFAULT_CONNECTOR_DIR, GeneratorConstants.CONNECTOR_TEMPLATE_NAME));
+
+                // Write ballerina structs
+                sourceFiles.add(getSourceFile(modelPackage, GeneratorConstants.SCHEMA_FILE_NAME, definitionContext,
+                        GeneratorConstants.DEFAULT_MODEL_DIR, GeneratorConstants.SCHEMA_TEMPLATE_NAME));
+
+                break;
+            case MOCK:
+                sourceFiles
+                        .add(getSourceFile(srcPackage, srcFile, definitionContext, GeneratorConstants.DEFAULT_MOCK_DIR,
+                                GeneratorConstants.MOCK_TEMPLATE_NAME));
+
+                // Write ballerina structs
+                sourceFiles.add(getSourceFile(modelPackage, GeneratorConstants.SCHEMA_FILE_NAME, definitionContext,
+                        GeneratorConstants.DEFAULT_MODEL_DIR, GeneratorConstants.SCHEMA_TEMPLATE_NAME));
+
+                break;
+            default:
+                return null;
+        }
+
+        return sourceFiles;
+    }
+
+    /**
+     * Write ballerina definition of a <code>object</code> to a file as described by <code>template</code>.
      *
      * @param object       Context object to be used by the template parser
      * @param templateDir  Directory with all the templates required for generating the source file
@@ -145,19 +202,41 @@ public class CodeGenerator {
         return handlebars.compile(templateName);
     }
 
+    private GenSrcFile getSourceFile(String pkgName, String fileName, BallerinaOpenApi object, String templateDir,
+            String templateName) throws IOException {
+        return new GenSrcFile(pkgName, fileName, getContent(object, templateDir, templateName));
+    }
+
+    private String getContent(BallerinaOpenApi object, String templateDir, String templateName)
+            throws IOException {
+        Template template = compileTemplate(templateDir, templateName);
+        Context context = Context.newBuilder(object)
+                .resolver(MapValueResolver.INSTANCE, JavaBeanValueResolver.INSTANCE, FieldValueResolver.INSTANCE)
+                .build();
+        return template.apply(context);
+    }
+
     public String getSrcPackage() {
         return srcPackage;
     }
 
-    public void setSrcPackage(String srcPackage) {
-        this.srcPackage = srcPackage;
+    public CodeGenerator srcPackage(String srcPackage) {
+        if (srcPackage == null || srcPackage.isEmpty()) {
+            this.srcPackage = DEFAULT_SRC_PACKAGE;
+        } else {
+            this.srcPackage = srcPackage;
+        }
+
+        return this;
     }
 
-    public String getModelPackage() {
-        return modelPackage;
-    }
+    public CodeGenerator modelPackage(String modelPackage) {
+        if (modelPackage == null || modelPackage.isEmpty()) {
+            this.modelPackage = DEFAULT_MODEL_PACKAGE;
+        } else {
+            this.modelPackage = modelPackage;
+        }
 
-    public void setModelPackage(String modelPackage) {
-        this.modelPackage = modelPackage;
+        return this;
     }
 }

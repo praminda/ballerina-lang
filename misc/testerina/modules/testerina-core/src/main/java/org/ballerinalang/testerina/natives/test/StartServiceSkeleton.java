@@ -95,8 +95,7 @@ public class StartServiceSkeleton extends BlockingNativeCallableUnit {
                     "exists [source root] %s", rootDir.toString()));
         }
 
-        CodeGenerator generator = new CodeGenerator();
-        generator.setSrcPackage(packageName);
+        CodeGenerator generator = new CodeGenerator().srcPackage(packageName);
 
         try {
             generator.generate(GeneratorConstants.GenType.MOCK, swaggerFilePath, rootDir.toString());
