@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ballerinalang.code.generator.util;
+package org.ballerinalang.stubgen.util;
 
 import org.ballerinalang.model.tree.AnnotationAttachmentNode;
 import org.ballerinalang.model.tree.expressions.ExpressionNode;

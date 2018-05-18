@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ballerinalang.code.generator;
+package org.ballerinalang.stubgen;
 
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
@@ -25,8 +25,8 @@ import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.FileTemplateLoader;
-import org.ballerinalang.code.generator.exception.CodeGeneratorException;
-import org.ballerinalang.code.generator.model.ClientContextHolder;
+import org.ballerinalang.stubgen.exception.CodeGeneratorException;
+import org.ballerinalang.stubgen.model.ClientContextHolder;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

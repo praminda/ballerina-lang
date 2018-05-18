@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ballerinalang.code.generator.exception;
+package org.ballerinalang.stubgen.exception;
 
 /**
  * Top level exception class of Code Generator exceptions.

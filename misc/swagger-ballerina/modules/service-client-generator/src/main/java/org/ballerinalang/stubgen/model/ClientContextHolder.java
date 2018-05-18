@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.ballerinalang.code.generator.model;
+package org.ballerinalang.stubgen.model;
 
-import org.ballerinalang.code.generator.exception.CodeGeneratorException;
+import org.ballerinalang.stubgen.exception.CodeGeneratorException;
 import org.ballerinalang.model.tree.EndpointNode;
 import org.ballerinalang.model.tree.ResourceNode;
 import org.ballerinalang.model.tree.ServiceNode;

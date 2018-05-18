@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ballerinalang.code.generator.model;
+package org.ballerinalang.stubgen.model;
 
 import org.ballerinalang.model.tree.VariableNode;
 import org.ballerinalang.model.tree.types.TypeNode;

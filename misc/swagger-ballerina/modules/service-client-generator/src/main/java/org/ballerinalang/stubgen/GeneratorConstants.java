@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.ballerinalang.code.generator;
+package org.ballerinalang.stubgen;
 
 import java.io.File;
 

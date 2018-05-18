@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.ballerinalang.code.generator.util;
+package org.ballerinalang.stubgen.util;
 
-import org.ballerinalang.code.generator.CodeGenerator;
-import org.ballerinalang.code.generator.GeneratorConstants;
-import org.ballerinalang.code.generator.exception.CodeGeneratorException;
-import org.ballerinalang.code.generator.model.ClientContextHolder;
+import org.ballerinalang.stubgen.CodeGenerator;
+import org.ballerinalang.stubgen.GeneratorConstants;
+import org.ballerinalang.stubgen.exception.CodeGeneratorException;
+import org.ballerinalang.stubgen.model.ClientContextHolder;
 import org.ballerinalang.compiler.plugins.AbstractCompilerPlugin;
 import org.ballerinalang.compiler.plugins.SupportedAnnotationPackages;
 import org.ballerinalang.model.tree.AnnotationAttachmentNode;
