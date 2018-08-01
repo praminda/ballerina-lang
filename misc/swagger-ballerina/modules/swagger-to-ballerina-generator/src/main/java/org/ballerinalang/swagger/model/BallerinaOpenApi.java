@@ -136,10 +136,10 @@ public class BallerinaOpenApi implements BallerinaSwaggerObject<BallerinaOpenApi
 
                 // If schema type has not been set, set the type with Schema name
                 if (StringUtils.isEmpty(schema.getType())) {
-                    schema.setType(entry.getKey());
+                    schema.setType(schema.toBallerinaType(entry.getKey()));
                 }
 
-                schemas.add(new AbstractMap.SimpleEntry<>(entry.getKey(), schema));
+                schemas.add(new AbstractMap.SimpleEntry<>(schema.getType(), schema));
             } catch (BallerinaOpenApiException e) {
                 // Ignore exception and try to build next schema. No need to break the flow for a failure of one schema.
             }

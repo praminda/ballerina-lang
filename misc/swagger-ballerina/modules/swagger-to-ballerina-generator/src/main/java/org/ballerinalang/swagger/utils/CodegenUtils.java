@@ -88,4 +88,31 @@ public class CodegenUtils {
             }
         }
     }
+
+    /**
+     * Change the provided property name to ballerina property name.
+     * <p>Following actions will be taken for the conversion</p>
+     * <ol>
+     * <li>Verify if {@code origName} is reserved ballerina keyword and prefix the {@code origName} with an '_'.
+     * Ex: toPropertyName("type") will return "_type".</li>
+     * <li>Escape invalid special characters with '_'</li>
+     * </ol>
+     *
+     * @param origName original property name
+     * @return keyword escaped property name
+     */
+    public static String toPropertyName(String origName) {
+        if (origName == null || origName.isEmpty()) {
+            return origName;
+        }
+
+        String escapedName = origName;
+        boolean isKeyword = GeneratorConstants.RESERVED_KEYWORDS.stream().anyMatch(key -> key.equals(origName));
+        if (isKeyword) {
+            escapedName = '_' + origName;
+        }
+
+        escapedName = escapedName.replaceAll("[^a-zA-Z0-9_]+", "_");
+        return escapedName;
+    }
 }

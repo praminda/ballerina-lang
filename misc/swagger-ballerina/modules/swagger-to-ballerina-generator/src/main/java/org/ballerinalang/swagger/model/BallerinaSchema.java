@@ -33,6 +33,7 @@ import io.swagger.v3.oas.models.media.PasswordSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.ballerinalang.swagger.exception.BallerinaOpenApiException;
+import org.ballerinalang.swagger.utils.CodegenUtils;
 import org.ballerinalang.swagger.utils.GeneratorConstants;
 
 import java.util.AbstractMap;
@@ -68,7 +69,7 @@ public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, 
             extractComposedSchema((ComposedSchema) schema, openAPI);
             return this;
         } else if (isValueTypeSchema(schema)) {
-            this.type = getPropertyType(schema);
+            this.type = toBallerinaType(getPropertyType(schema));
             return this;
         } else if (schema.get$ref() != null) {
             String refType = getReferenceType(schema.get$ref());
@@ -79,14 +80,19 @@ public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, 
 
             // recurse with the reference schema found until we meet a concrete schema
             BallerinaSchema concreteSchema = new BallerinaSchema().buildContext(schema, openAPI);
-            concreteSchema.setType(refType);
+            concreteSchema.setType(toBallerinaType(refType));
             return concreteSchema;
         } else if (schema.getProperties() == null) {
             if (schema.getType() == null) {
                 throw new BallerinaOpenApiException("Unsupported schema type in schema: " + schema.getName());
+            } else if ("object".equals(schema.getType())) {
+                // developer has intentionally added an object type schema without properties
+                // this is an special case seen in k8s swagger definition
+                this.type = null;
+            } else {
+                this.type = toBallerinaType(getPropertyType(schema));
             }
 
-            this.type = getPropertyType(schema);
             return this;
         }
 
@@ -96,20 +102,21 @@ public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, 
         // change conflicting swagger data types to ballerina data types
         for (Map.Entry<String, Schema> entry : entries) {
             Schema prop = entry.getValue();
-            String name;
+            String name, propType;
 
             // Extract reference type objects
             if (prop.get$ref() != null) {
-                String type = getReferenceType(prop.get$ref());
-                type = type.isEmpty() ? UNSUPPORTED_PROPERTY_MSG : type;
-                name = toPropertyName(entry.getKey());
-                prop.setType(type);
+                propType = toBallerinaType(getReferenceType(prop.get$ref()));
+                propType = propType.isEmpty() ? UNSUPPORTED_PROPERTY_MSG : propType;
+                name = CodegenUtils.toPropertyName(entry.getKey());
+                prop.setType(propType);
                 newEntries.add(new AbstractMap.SimpleEntry<>(name, prop));
                 continue;
             }
 
-            name = toPropertyName(entry.getKey());
-            prop.setType(getPropertyType(prop));
+            name = CodegenUtils.toPropertyName(entry.getKey());
+            propType = getPropertyType(prop);
+            prop.setType(toBallerinaType(propType));
             newEntries.add(new AbstractMap.SimpleEntry<>(name, prop));
         }
 
@@ -206,26 +213,24 @@ public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, 
     }
 
     /**
-     * Change the provided property name to ballerina property name.
+     * Change the provided property type to ballerina supported type.
      * <p>Following actions will be taken for the conversion</p>
      * <ol>
-     * <li>Verify if {@code origName} is reserved ballerina keyword and prefix the {@code origName} with an '_'.
-     * Ex: toPropertyName("type") will return "_type".</li>
-     * <li>Escape invalid special characters</li>
+     * <li>Escape invalid special characters with '_'</li>
      * </ol>
      *
-     * @param origName original property name
-     * @return keyword escaped property name
+     * @param origType original property type
+     * @return keyword escaped property type
      */
-    private String toPropertyName(String origName) {
-        String escapedName = origName;
-        boolean isKeyword = GeneratorConstants.RESERVED_KEYWORDS.stream().anyMatch(key -> key.equals(origName));
-        if (isKeyword) {
-            escapedName = '_' + origName;
+    public String toBallerinaType(String origType) {
+        if (origType == null || origType.isEmpty()) {
+            return origType;
         }
 
-        escapedName = escapedName.replaceAll("[^a-zA-Z0-9_]+", "_");
-        return escapedName;
+        String escapedType = origType;
+        escapedType = escapedType.replaceAll("[^a-zA-Z0-9_]+", "_");
+
+        return escapedType;
     }
 
     private boolean isValueTypeSchema(Schema schema) {

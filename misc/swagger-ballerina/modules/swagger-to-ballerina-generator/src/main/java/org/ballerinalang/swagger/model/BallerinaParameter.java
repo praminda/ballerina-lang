@@ -21,6 +21,7 @@ import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import org.ballerinalang.swagger.exception.BallerinaOpenApiException;
+import org.ballerinalang.swagger.utils.CodegenUtils;
 
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class BallerinaParameter implements BallerinaSwaggerObject<BallerinaParam
 
     @Override
     public BallerinaParameter buildContext(Parameter parameter, OpenAPI openAPI) throws BallerinaOpenApiException {
-        this.name = parameter.getName();
+        this.name = CodegenUtils.toPropertyName(parameter.getName());
         this.in = parameter.getIn();
         this.description = parameter.getDescription();
         this.required = parameter.getRequired();
