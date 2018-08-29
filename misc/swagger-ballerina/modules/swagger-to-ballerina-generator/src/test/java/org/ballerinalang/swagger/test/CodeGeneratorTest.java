@@ -87,7 +87,7 @@ public class CodeGeneratorTest {
             generator.generate(GenType.CLIENT, definitionPath, projectPath.toString());
             if (Files.exists(outFile)) {
                 String result = new String(Files.readAllBytes(outFile));
-                Assert.assertTrue(result != null && result.contains("public function listPets()"));
+                Assert.assertTrue(result != null && result.contains("public function listPets("));
             } else {
                 Assert.fail("Client was not generated");
             }

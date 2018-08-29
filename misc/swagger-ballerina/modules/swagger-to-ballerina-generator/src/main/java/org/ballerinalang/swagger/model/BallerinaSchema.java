@@ -50,16 +50,19 @@ import java.util.Set;
  */
 public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, Schema> {
     private static final String LIST_SUFFIX = "List";
+    private static final String ARRAY_SUFFIX = "Array";
     private static final String UNSUPPORTED_PROPERTY_MSG = "// Unsupported Property Found.";
 
     private Schema oasSchema;
     private String type;
     private boolean isComposed;
+    private boolean isArraySchema;
     private Set<Map.Entry<String, Schema>> properties;
 
     @Override
     public BallerinaSchema buildContext(Schema schema, OpenAPI openAPI) throws BallerinaOpenApiException {
         this.oasSchema = schema;
+        this.isArraySchema = false;
 
         // identify array type schema definitions
         if (schema instanceof ArraySchema) {
@@ -85,14 +88,9 @@ public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, 
         } else if (schema.getProperties() == null) {
             if (schema.getType() == null) {
                 throw new BallerinaOpenApiException("Unsupported schema type in schema: " + schema.getName());
-            } else if ("object".equals(schema.getType())) {
-                // developer has intentionally added an object type schema without properties
-                // this is an special case seen in k8s swagger definition
-                this.type = null;
-            } else {
-                this.type = toBallerinaType(getPropertyType(schema));
             }
 
+            this.type = toBallerinaType(getPropertyType(schema));
             return this;
         }
 
@@ -186,11 +184,12 @@ public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, 
             type = schema.getItems().getType();
         }
         String name = type.toLowerCase(Locale.ENGLISH) + LIST_SUFFIX;
-        name = toPropertyName(name);
-        type = type.isEmpty() ? UNSUPPORTED_PROPERTY_MSG : type + "[]";
+        name = CodegenUtils.toPropertyName(name);
+        type = type.isEmpty() ? UNSUPPORTED_PROPERTY_MSG : toBallerinaType(type);
 
-        propSchema.setType(type);
+        propSchema.setType(type + "[]");
         this.type = type; // this schema type is an array of some type
+        this.isArraySchema = true;
         AbstractMap.SimpleEntry entry = new AbstractMap.SimpleEntry<>(name, propSchema);
         this.properties.add(entry);
     }
@@ -261,5 +260,13 @@ public class BallerinaSchema implements BallerinaSwaggerObject<BallerinaSchema, 
 
     public boolean isComposed() {
         return isComposed;
+    }
+
+    public boolean isArraySchema() {
+        return isArraySchema;
+    }
+
+    public void setArraySchema(boolean arraySchema) {
+        isArraySchema = arraySchema;
     }
 }
